@@ -5,7 +5,7 @@ module Changeling
     end
 
     def save_logling
-      if changes = self.changes
+      if changes = self.changes.try(:to_json)
         logling = Changeling::Models::Logling.create(self, changes)
       end
     end

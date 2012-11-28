@@ -1,6 +1,6 @@
 require (File.expand_path('../../../spec_helper', __FILE__))
 
-describe Changeling::Probeling do
+describe Changeling::Probeling, :solr => true do
   before(:all) do
     @klass = Changeling::Models::Logling
   end
@@ -23,7 +23,7 @@ describe Changeling::Probeling do
 
   describe ".all_history" do
     it "should query Logling with it's pluralized class name, and it's own ID" do
-      @klass.should_receive(:records_for).with(@object)
+      @klass.should_receive(:changelogs_for).with(@object)
       @object.all_history
     end
 
@@ -34,17 +34,17 @@ describe Changeling::Probeling do
 
   describe ".history" do
     it "should query Logling with it's pluralized class name, and it's own ID, and a default number of loglings to return" do
-      @klass.should_receive(:records_for).with(@object, 10)
+      @klass.should_receive(:changelogs_for).with(@object, 10)
       @object.history
     end
 
     it "should take an argument that overrides the default" do
-      @klass.should_receive(:records_for).with(@object, 5)
+      @klass.should_receive(:changelogs_for).with(@object, 5)
       @object.history(5)
     end
 
     it "should handle non-integer arguments" do
-      @klass.should_receive(:records_for).with(@object, 5)
+      @klass.should_receive(:changelogs_for).with(@object, 5)
       @object.history("5")
     end
 

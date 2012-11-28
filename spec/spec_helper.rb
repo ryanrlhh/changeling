@@ -1,6 +1,8 @@
 require(File.expand_path('../../lib/changeling', __FILE__))
 require 'mongoid'
-require 'redis'
+require 'sunspot'
+require 'sunspot_matchers'
+require 'sunspot-rails-tester'
 require 'database_cleaner'
 
 # Fixtures
@@ -16,17 +18,24 @@ else
   Mongoid.database = Mongo::Connection.new('localhost','27017').db('changeling_test')
 end
 
+$original_sunspot_session = Sunspot.session
+
 RSpec.configure do |config|
   config.mock_with :rspec
+  config.include SunspotMatchers
 
   config.before(:suite) do
     DatabaseCleaner[:mongoid].strategy = :truncation
-    $redis = Redis.new(:db => 1)
   end
 
   config.before(:each) do
-    $redis.flushdb
     DatabaseCleaner.start
+    Sunspot.session = SunspotMatchers::SunspotSessionSpy.new(Sunspot.session)
+  end
+
+  config.before :each, :solr => true do
+    Sunspot.session = $original_sunspot_session
+    Sunspot.remove_all!
   end
 
   config.after(:each) do

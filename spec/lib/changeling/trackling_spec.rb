@@ -24,7 +24,7 @@ describe Changeling::Trackling do
         # Persist object to DB so we can update it.
         @object.save!
 
-        @klass.should_receive(:create).with(@object, @changes)
+        @klass.should_receive(:create).with(@object, @changes.to_json)
 
         @changes.each_pair do |k, v|
           @object.send("#{k}=", v[1])

@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.version       = Changeling::VERSION
 
   # Dependencies
-  gem.add_dependency "redis"
+  gem.add_dependency "sunspot"
 
   # Development Dependencies
   case RUBY_VERSION
@@ -33,4 +33,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rspec"
   gem.add_development_dependency "bson_ext"
   gem.add_development_dependency "database_cleaner"
+  gem.add_development_dependency "sunspot_matchers"
+  gem.add_development_dependency "sunspot-rails-tester"
 end

@@ -1,7 +1,16 @@
 module Changeling
   module Models
     class Logling
-      attr_accessor :klass, :object_id, :modifications, :before, :after, :changed_at
+      include Changeling::Sunspotable
+
+      attr_accessor :klass, :oid, :modifications_json, :before, :after, :modified_at
+
+      Sunspot.setup(self) do
+        string :klass, :stored => true
+        string :oid, :stored => true
+        string :modifications_json, :stored => true
+        time :modified_at, :stored => true
+      end
 
       class << self
         def create(object, changes)
@@ -21,59 +30,56 @@ module Changeling
           [before, after]
         end
 
-        def redis
-          @redis ||= Redis.new
+        def klassify(object)
+          object.class.to_s.underscore
         end
 
-        def redis_key(klass, object_id)
-          "changeling::#{klass}::#{object_id}"
-        end
+        def changelogs_for(object, length = nil)
+          search = Sunspot.search(self) do
+            with :klass, Logling.klassify(object)
+            with :oid, object.id.to_s
+            order_by :modified_at, :desc
+          end
 
-        def records_for(object, length = nil)
-          key = self.redis_key(object.class.to_s.underscore.pluralize, object.id.to_s)
-          length ||= self.redis.llen(key)
+          search.execute!
 
-          results = self.redis.lrange(key, 0, length).map { |value| self.new(object, JSON.parse(value)['modifications']) }
+          if length
+            results = search.hits.take(length) if length
+          else
+            results = search.hits
+          end
+
+          results.map { |result| self.new(object, result.stored(:modifications_json), result.stored(:modified_at)) }
         end
       end
 
-      def as_json
-        {
-          :modifications => self.modifications,
-          :changed_at => self.changed_at
-        }
-      end
-
-      def initialize(object, changes)
+      def initialize(object, changes, modified_time = nil)
         # Remove updated_at field.
         changes.delete("updated_at")
 
-        self.klass = object.class.to_s.underscore.pluralize
-        self.object_id = object.id.to_s
-        self.modifications = changes
+        self.klass = Logling.klassify(object)
+        self.oid = object.id.to_s
+        self.modifications_json = changes
 
-        self.before, self.after = Logling.parse_changes(changes)
+        self.before, self.after = Logling.parse_changes(self.modifications)
 
-        if object.respond_to?(:updated_at)
-          self.changed_at = object.updated_at
+        if modified_time
+          self.modified_at = modified_time
         else
-          self.changed_at = Time.now
+          if object.respond_to?(:updated_at)
+            self.modified_at = object.updated_at
+          else
+            self.modified_at = Time.now
+          end
         end
       end
 
-      def redis_key
-        Logling.redis_key(self.klass, self.object_id)
+      def modifications
+        JSON.parse(self.modifications_json)
       end
 
       def save
-        key = self.redis_key
-        value = self.serialize
-
-        Logling.redis.lpush(key, value)
-      end
-
-      def serialize
-        self.as_json.to_json
+        Sunspot.index!(self)
       end
     end
   end
