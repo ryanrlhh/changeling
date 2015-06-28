@@ -8,8 +8,9 @@ describe Changeling::Support::Search do
 
   describe ".find_by" do
     before(:each) do
-      @index = @klass.tire.index
-      allow(@klass).to receive_message_chain(:tire, :index).and_return(@index)
+      @index = @klass.__elasticsearch__.index_name
+      allow(@klass).to receive_message_chain(:__elasticsearch__, :index_name).and_return(@index)
+      allow(@klass).to receive_message_chain(:__elasticsearch__, :refresh_index!)
 
       filters = [
           { :klass => "blog_post" },
@@ -45,7 +46,7 @@ describe Changeling::Support::Search do
     end
 
     it "should refresh the ElasticSearch index" do
-      expect(@index).to receive(:refresh)
+      expect(@klass).to receive_message_chain(:__elasticsearch__, :refresh_index!)
       @search.find_by(@options)
     end
 
@@ -55,7 +56,7 @@ describe Changeling::Support::Search do
       end
 
       it "should parse them and convert them into Logling objects if they are returned as Tire::Results::Item objects" do
-        @tire_object = Tire::Results::Item.new
+        @tire_object = Elasticsearch::Model::Response::Response.new(@klass, @search)
         @tire_json = "{}"
         @hash = {}
 

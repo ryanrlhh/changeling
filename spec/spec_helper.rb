@@ -43,7 +43,8 @@ RSpec.configure do |config|
   config.before(:suite) do
     DatabaseCleaner[:active_record].strategy = :truncation
     DatabaseCleaner[:mongoid].strategy = :truncation
-    Tire::Model::Search.index_prefix "changeling_test"
+
+    # Tire::Model::Search.index_prefix "changeling_test"
   end
 
   config.before(:each) do

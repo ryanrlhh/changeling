@@ -11,7 +11,7 @@ module Changeling
         size = args[:size] || 10
 
         @class = Changeling::Models::Logling
-        @class.tire.index.refresh
+        @class.__elasticsearch__.refresh_index!
 
         results = @class.search :per_page => size do
           query do
@@ -30,7 +30,7 @@ module Changeling
         results.map { |result|
           if result.class == @class
             result
-          elsif result.class == Tire::Results::Item
+          elsif result.class == Elasticsearch::Model::Response::Response
             @class.new(JSON.parse(result.to_json))
           elsif result.class == Hash
             @class.new(result)
