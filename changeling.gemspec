@@ -17,6 +17,9 @@ Gem::Specification.new do |gem|
 
   # Dependencies
   gem.add_dependency "tire", "~> 0.6.2"
+  gem.add_dependency "elasticsearch-rails", "~> 0.1.7"
+  gem.add_dependency "elasticsearch-model", "~> 0.1.7"
+  gem.add_dependency "elasticsearch-persistence", "~> 0.1.7"
   gem.add_dependency "activemodel"
 
   # Development Dependencies

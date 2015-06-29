@@ -11,9 +11,9 @@ module Changeling
         size = args[:size] || 10
 
         @class = Changeling::Models::Logling
-        @class.tire.index.refresh
+        @class.__elasticsearch__.refresh_index!(index: @class.index_name)
 
-        results = @class.search :per_page => size do
+        results = @class.search nil, {index: @class.index_name} do
           query do
             filtered do
               query { all }
@@ -26,11 +26,11 @@ module Changeling
           sort { by sort[:field], sort[:direction].to_s }
         end.results
 
-        # Some apps may return Tire::Results::Item objects in results instead of Changeling objects.
+        # Some apps may return Response::Response objects in results instead of Changeling objects.
         results.map { |result|
           if result.class == @class
             result
-          elsif result.class == Tire::Results::Item
+          elsif result.class == Response::Response
             @class.new(JSON.parse(result.to_json))
           elsif result.class == Hash
             @class.new(result)
