@@ -3,6 +3,7 @@ require 'mongoid'
 require 'database_cleaner'
 require 'rails/all'
 require 'rspec/rails'
+require 'byebug'
 require 'action_controller/railtie' # allows ActionController::Base
 
 # Fixtures
@@ -43,7 +44,6 @@ RSpec.configure do |config|
   config.before(:suite) do
     DatabaseCleaner[:active_record].strategy = :truncation
     DatabaseCleaner[:mongoid].strategy = :truncation
-    Tire::Model::Search.index_prefix "changeling_test"
   end
 
   config.before(:each) do

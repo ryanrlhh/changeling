@@ -30,7 +30,7 @@ module Changeling
         results.map { |result|
           if result.class == @class
             result
-          elsif result.class == Response::Response
+          elsif result.is_a?(Elasticsearch::Model::Response::Result)
             @class.new(JSON.parse(result.to_json))
           elsif result.class == Hash
             @class.new(result)

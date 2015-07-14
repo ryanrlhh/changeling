@@ -8,18 +8,7 @@ module Changeling
       include Elasticsearch::Persistence::Model
       include Elasticsearch::Model::Naming
 
-      # include Tire::Model::Search
-      # include Tire::Model::Callbacks
-      # include Tire::Model::Persistence
-
-      # property :klass, :type => 'string'
-      # property :oid, :type => 'string'
-      # property :modified_by, :type => 'string'
-      # property :modifications, :type => 'string'
-      # property :modified_fields, :type => 'string', :analyzer => 'keyword'
-      # property :modified_at, :type => 'date'
-
-      index_name 'myteksi-changeling_changeling_models_loglings'
+      # index_name 'changeling_changeling_models_loglings'
 
       attribute :klass, String
       attribute :oid, String
@@ -40,6 +29,7 @@ module Changeling
       class << self
         def create(object)
           logling = self.new(object)
+
           logling.save
         end
 
@@ -138,8 +128,11 @@ module Changeling
 
       def save
         unless self.modifications.empty?
-          # self.update_index
-          __elasticsearch__.update_document
+          if self.new_record?
+            __elasticsearch__.index_document
+          else
+            __elasticsearch__.update_document
+          end
         end
       end
     end
