@@ -4,16 +4,18 @@ module Changeling
       extend ActiveModel::Naming
       attr_accessor :klass, :oid, :modified_by, :modifications, :before, :after, :modified_at, :modified_fields
 
-      include Tire::Model::Search
-      include Tire::Model::Callbacks
-      include Tire::Model::Persistence
+      include Elasticsearch::Model
+      include Elasticsearch::Persistence::Model
+      include Elasticsearch::Model::Naming
 
-      property :klass, :type => 'string'
-      property :oid, :type => 'string'
-      property :modified_by, :type => 'string'
-      property :modifications, :type => 'string'
-      property :modified_fields, :type => 'string', :analyzer => 'keyword'
-      property :modified_at, :type => 'date'
+      # index_name 'changeling_changeling_models_loglings'
+
+      attribute :klass, String
+      attribute :oid, String
+      attribute :modified_by, String
+      attribute :modifications, String
+      attribute :modified_fields, String, mapping: { analyzer: 'snowball' }
+      attribute :modified_at, Date
 
       mapping do
         indexes :klass, :type => "string"
@@ -27,6 +29,7 @@ module Changeling
       class << self
         def create(object)
           logling = self.new(object)
+
           logling.save
         end
 
@@ -75,7 +78,7 @@ module Changeling
         }.to_json
       end
 
-      def as_json
+      def as_json(options={})
         {
           :class => self.klass,
           :oid => self.oid,
@@ -125,7 +128,11 @@ module Changeling
 
       def save
         unless self.modifications.empty?
-          self.update_index
+          if self.new_record?
+            __elasticsearch__.index_document
+          else
+            __elasticsearch__.update_document
+          end
         end
       end
     end

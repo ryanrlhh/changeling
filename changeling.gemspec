@@ -17,6 +17,9 @@ Gem::Specification.new do |gem|
 
   # Dependencies
   gem.add_dependency "tire", "~> 0.6.2"
+  gem.add_dependency "elasticsearch-rails", "~> 0.1.7"
+  gem.add_dependency "elasticsearch-model", "~> 0.1.7"
+  gem.add_dependency "elasticsearch-persistence", "~> 0.1.7"
   gem.add_dependency "activemodel"
 
   # Development Dependencies
@@ -28,7 +31,7 @@ Gem::Specification.new do |gem|
   when "2.1.5"
     gem.add_development_dependency "mongoid", "3.1.7"
     gem.add_development_dependency "activerecord", "3.2.22"
-    gem.add_development_dependency "pry"
+    gem.add_development_dependency "pry-byebug"
   end
   gem.add_development_dependency "sidekiq", "3.2.1"
   gem.add_development_dependency "rake"
